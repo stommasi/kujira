@@ -201,6 +201,27 @@ loadBitmap(
 }
 
 Bitmap
+vflipBitmap(
+    Bitmap bitmap)
+{
+    int w = bitmap.width;
+    int h = bitmap.height;
+    Bitmap vflippedBitmap;
+    vflippedBitmap.data = (unsigned int *)calloc(w * h, sizeof(int));
+    vflippedBitmap.width = w;
+    vflippedBitmap.height = h;
+    unsigned int *dest = vflippedBitmap.data;
+    dest += (w * h) - w;
+    for (int y = 0; y < h; ++y) {
+        for (int x = 0; x < w; ++x) {
+            *dest++ = *(bitmap.data + (y * w) + x);
+        }
+        dest -= w * 2;
+    }
+    return vflippedBitmap;
+}
+
+Bitmap
 rotateBitmap(
     Bitmap bitmap,
     float angle)
@@ -308,6 +329,9 @@ drawBitmap(
 		y2 = display.height;
 	}
     Bitmap rotatedBitmap = rotateBitmap(scaledBitmap, angle);
+    if (fabs(angle - M_PI) < 0.1f) {
+        rotatedBitmap = vflipBitmap(rotatedBitmap);
+    }
     unsigned int *src = rotatedBitmap.data + (yoff * rotatedBitmap.width) + xoff;
     unsigned int *dest = (unsigned int *)display.buffer + (y1 * display.width);
     for (int y = y1; y < y2; ++y) {
